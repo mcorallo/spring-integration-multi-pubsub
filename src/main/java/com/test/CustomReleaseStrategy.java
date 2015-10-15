@@ -3,13 +3,14 @@ package com.test;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.integration.aggregator.CorrelationStrategy;
 import org.springframework.integration.aggregator.ReleaseStrategy;
 import org.springframework.integration.annotation.Aggregator;
 import org.springframework.integration.store.MessageGroup;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
-public class CustomReleaseStrategy implements ReleaseStrategy {
+public class CustomReleaseStrategy implements ReleaseStrategy, CorrelationStrategy {
 
 	@Aggregator
 	public Object aggregate ( List<Message<?>> objects ) {
@@ -17,7 +18,6 @@ public class CustomReleaseStrategy implements ReleaseStrategy {
 		List<Object> res = new ArrayList<> ();
 		for ( Message<?> m : objects ) {
 			res.add ( m.getPayload () );
-			System.out.println ( m.getHeaders ().get ( "history" ) );
 		}
 
 		return res;
@@ -27,28 +27,21 @@ public class CustomReleaseStrategy implements ReleaseStrategy {
 	@Override
 	public boolean canRelease ( MessageGroup group ) {
 
-		MessageHeaders headers = group.getOne ().getHeaders ();
-		List<List<Object>> sequenceDetails = (List<List<Object>>) headers.get ( "sequenceDetails" );
-		System.out.println ( sequenceDetails );
+		//size() == iterator().next().headers['sequenceSize'] * iterator().next().headers['sequenceDetails'][0][2]
 
-		int expectedSize = 1;
-		for ( List<Object> sequenceItem : sequenceDetails ) {
-			if ( sequenceItem.get ( 1 ) != sequenceItem.get ( 2 ) ) {
-				System.out.println ( "--> AGG: no release check, group max not reached" );
-				return false;
-			}
-			expectedSize *= (int) sequenceItem.get ( 2 );//multiplies the group sizes
-		}
+		Message<?> oneMessage = group.getOne ();
+		MessageHeaders headers = oneMessage.getHeaders ();
+		int currentSize = (int) headers.get ( "sequenceSize" );
+		int nestedSize = (int) ( (List<List<Object>>) headers.get ( "sequenceDetails" ) ).get ( 0 ).get ( 2 );
+		return group.size () == currentSize * nestedSize;
+	}
 
-		int expectedSize2 = expectedSize * (int) headers.get ( "sequenceSize" );
+	@SuppressWarnings("unchecked")
+	@Override
+	public Object getCorrelationKey ( Message<?> message ) {
 
-		int currentSize = group.size () * expectedSize;
-		System.out.println ( "--> AGG: " + expectedSize2 + " : " + currentSize );
-		boolean canRelease = expectedSize2 == currentSize;
-		if ( canRelease ) {
-			System.out.println ( "ok" );
-		}
-		return canRelease;
+		//headers['sequenceDetails'][0][0]
+		return ( (List<List<Object>>) message.getHeaders ().get ( "sequenceDetails" ) ).get ( 0 ).get ( 0 );
 	}
 
 }

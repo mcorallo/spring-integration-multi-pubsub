@@ -13,6 +13,9 @@
 		http://www.springframework.org/schema/integration/jdbc       http://www.springframework.org/schema/integration/jdbc/spring-integration-jdbc.xsd
 		http://www.springframework.org/schema/context				 http://www.springframework.org/schema/context/spring-context.xsd">
 
+
+	<int:message-history />
+
 	<bean class="com.test.AsyncService2" />
 
 	<int:gateway id="gateway2" default-request-channel="async/step/1" service-interface="com.test.ServiceGateway2">
@@ -46,5 +49,7 @@
 	<int:aggregator input-channel="end2">
 		<bean class="com.test.CustomReleaseStrategy" />
 	</int:aggregator>
+
+<!-- 	<int:aggregator input-channel="end2" correlation-strategy-expression="headers['sequenceDetails'][0][0]" release-strategy-expression="size() == iterator().next().headers['sequenceSize'] * iterator().next().headers['sequenceDetails'][0][2]" /> -->
 
 </beans>  
