@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jee="http://www.springframework.org/schema/jee" xmlns:oxm="http://www.springframework.org/schema/oxm" xmlns:task="http://www.springframework.org/schema/task" xmlns:int="http://www.springframework.org/schema/integration" xmlns:int-http="http://www.springframework.org/schema/integration/http" xmlns:int-ws="http://www.springframework.org/schema/integration/ws" xmlns:int-stream="http://www.springframework.org/schema/integration/stream" xmlns:int-mail="http://www.springframework.org/schema/integration/mail" xmlns:int-jmx="http://www.springframework.org/schema/integration/jmx" xmlns:int-jdbc="http://www.springframework.org/schema/integration/jdbc" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans.xsd
+	    http://www.springframework.org/schema/jee                    http://www.springframework.org/schema/jee/spring-jee.xsd
+		http://www.springframework.org/schema/oxm                    http://www.springframework.org/schema/oxm/spring-oxm.xsd
+		http://www.springframework.org/schema/task                   http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/integration            http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/http       http://www.springframework.org/schema/integration/http/spring-integration-http.xsd
+		http://www.springframework.org/schema/integration/stream	 http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+		http://www.springframework.org/schema/integration/ws	     http://www.springframework.org/schema/integration/ws/spring-integration-ws.xsd
+		http://www.springframework.org/schema/integration/mail       http://www.springframework.org/schema/integration/mail/spring-integration-mail.xsd
+		http://www.springframework.org/schema/integration/jmx        http://www.springframework.org/schema/integration/jmx/spring-integration-jmx.xsd
+		http://www.springframework.org/schema/integration/jdbc       http://www.springframework.org/schema/integration/jdbc/spring-integration-jdbc.xsd
+		http://www.springframework.org/schema/context				 http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean class="com.test.AsyncService2" />
+
+	<int:gateway id="gateway2" default-request-channel="async/step/1" service-interface="com.test.ServiceGateway2">
+		<int:method name="send" />
+	</int:gateway>
+	
+	
+	
+	<!-- plugin 1 -->
+	<int:publish-subscribe-channel id="async/step/1" apply-sequence="true" />
+	<int:service-activator input-channel="async/step/1" output-channel="async/step/2">
+		<bean class="com.test.Transformer" />
+	</int:service-activator>
+	<int:service-activator input-channel="async/step/1" output-channel="async/step/2">
+		<bean class="com.test.Transformer" />
+	</int:service-activator>
+
+
+	<!-- plugin 2 -->
+	<int:publish-subscribe-channel id="async/step/2" apply-sequence="true" />
+	<int:service-activator input-channel="async/step/2" output-channel="end2">
+		<bean class="com.test.Transformer" />
+	</int:service-activator>
+	<int:service-activator input-channel="async/step/2" output-channel="end2">
+		<bean class="com.test.Transformer" />
+	</int:service-activator>
+
+
+	<!-- final channel/aggregator -->
+	<int:channel id="end2" />
+	<int:aggregator input-channel="end2">
+		<bean class="com.test.CustomReleaseStrategy" />
+	</int:aggregator>
+
+</beans>  
