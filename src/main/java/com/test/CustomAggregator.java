@@ -10,7 +10,7 @@ import org.springframework.integration.store.MessageGroup;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
-public class CustomReleaseStrategy implements ReleaseStrategy, CorrelationStrategy {
+public class CustomAggregator implements ReleaseStrategy, CorrelationStrategy {
 
 	@Aggregator
 	public Object aggregate ( List<Message<?>> objects ) {
@@ -31,8 +31,16 @@ public class CustomReleaseStrategy implements ReleaseStrategy, CorrelationStrate
 
 		Message<?> oneMessage = group.getOne ();
 		MessageHeaders headers = oneMessage.getHeaders ();
+		List<List<Object>> sequenceDetails = (List<List<Object>>) headers.get ( "sequenceDetails" );
+		System.out.println ( sequenceDetails );
+
+		//this loop is needed to compute the overall size
+		int nestedSize = 1;
+		for ( List<Object> sequenceItem : sequenceDetails ) {
+			nestedSize *= (int) sequenceItem.get ( 2 );
+		}
+
 		int currentSize = (int) headers.get ( "sequenceSize" );
-		int nestedSize = (int) ( (List<List<Object>>) headers.get ( "sequenceDetails" ) ).get ( 0 ).get ( 2 );
 		return group.size () == currentSize * nestedSize;
 	}
 

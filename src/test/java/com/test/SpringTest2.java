@@ -13,9 +13,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({
-		"classpath*:spring/integration-context-service-async.xml"
+		"classpath*:spring/integration-context-service-async2.xml"
 })
-public class SpringTest {
+public class SpringTest2 {
 
 	@Autowired
 	private ApplicationContext context;
@@ -26,7 +26,7 @@ public class SpringTest {
 		AsyncService2 as2 = context.getBean ( AsyncService2.class );
 		List<Integer> result = as2.process ( null );
 		System.out.println ( result );
-		assertEquals ( 6, result.size () );
+		assertEquals ( 8, result.size () );
 	}
 
 }

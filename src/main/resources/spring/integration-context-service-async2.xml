@@ -32,17 +32,24 @@
 	<int:service-activator input-channel="async/step/1" output-channel="async/step/2">
 		<bean class="com.test.Transformer" />
 	</int:service-activator>
-	<int:service-activator input-channel="async/step/1" output-channel="async/step/2">
-		<bean class="com.test.Transformer" />
-	</int:service-activator>
 
 
 	<!-- plugin 2 -->
 	<int:publish-subscribe-channel id="async/step/2" apply-sequence="true" />
-	<int:service-activator input-channel="async/step/2" output-channel="end2">
+	<int:service-activator input-channel="async/step/2" output-channel="async/step/3">
 		<bean class="com.test.Transformer" />
 	</int:service-activator>
-	<int:service-activator input-channel="async/step/2" output-channel="end2">
+	<int:service-activator input-channel="async/step/2" output-channel="async/step/3">
+		<bean class="com.test.Transformer" />
+	</int:service-activator>
+
+
+	<!-- plugin 3 -->
+	<int:publish-subscribe-channel id="async/step/3" apply-sequence="true" />
+	<int:service-activator input-channel="async/step/3" output-channel="end2">
+		<bean class="com.test.Transformer" />
+	</int:service-activator>
+	<int:service-activator input-channel="async/step/3" output-channel="end2">
 		<bean class="com.test.Transformer" />
 	</int:service-activator>
 
